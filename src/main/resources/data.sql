@@ -1,0 +1,1 @@
+INSERT INTO weather(fecha, temperatura) VALUES ('2019-09-05 18:10',30);
