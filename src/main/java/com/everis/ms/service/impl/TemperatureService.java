@@ -6,6 +6,7 @@ import com.everis.ms.dto.TemperatureDTO;
 import com.everis.ms.entity.Temperature;
 import com.everis.ms.repository.TemperatureRepository;
 import com.everis.ms.service.ITemperatureService;
+import com.everis.ms.util.Constantes;
 import com.everis.ms.util.UtilDate;
 import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Service
@@ -27,18 +30,25 @@ public class TemperatureService implements ITemperatureService {
     ConnectionFactory connectionFactory;
 
     @Override
-    public Mono<Temperature> save(TemperatureDTO e) {
+    public Mono save(TemperatureDTO e) {
         //Validar si es fecha valida - Fomrato: dd/MM/yyyy HH:mm
+
         Timestamp timestamp=null;
+        Date fecha=null;
         try {
-            timestamp=UtilDate.parseTimeStampSQL(e.getFecha(), "dd/MM/yyyy HH:mm");
+         //   timestamp=UtilDate.parseTimeStampSQL(e.getFecha(), "dd/MM/yyyy HH:mm");
+             fecha=UtilDate.parseDate(e.getFecha(), "dd/MM/yyyy HH:mm");
         }catch (Exception ex){
-            return Mono.error(ex);
+            return Mono.error(new Exception("Error al parsear el formato fecha"));
         }
 
+
         Temperature temperature=new Temperature();
-        temperature.setFecha(e.getFecha());
-        temperature.setTemperatura(e.getTemperatura());
+        temperature.setMillis(fecha.getTime());
+        temperature.setTemperature(e.getTemperatura());
+        temperature.setLocaltime(Instant.ofEpochMilli(fecha.getTime())
+                .atZone(ZoneId.of(Constantes.REGION))
+                .toLocalDateTime());
         //temperature.setId(99);
 
         return temperatureRepository.save(temperature);
@@ -67,8 +77,8 @@ public class TemperatureService implements ITemperatureService {
     }
 
     @Override
-    public Flux<Temperature> getAll() {
-        return temperatureRepository.getAll();
+    public Flux<Temperature> findAll() {
+        return temperatureRepository.findAll();
     }
     @Override
     public Flux<Temperature> findAllByFecha(String date){

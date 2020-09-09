@@ -6,6 +6,7 @@ import com.everis.ms.dto.TemperatureDTO;
 import com.everis.ms.entity.Temperature;
 import com.everis.ms.service.impl.TemperatureService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,14 +26,12 @@ public class TemperatureController {
 
     @RequestMapping(value = { "/create", "/" }, method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<Temperature> create(@RequestBody TemperatureDTO e) {
-        Mono<Temperature> result= temperatureService.save(e);
+    public Mono create(@RequestBody TemperatureDTO e) {
+        //Mono<Temperature> result= temperatureService.save(e);
 
-        return result;
-        /*
-        return result.flatMap(temperature -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(temperature)).onErrorResume(error -> ServerResponse.badRequest().build());
-*/
+        return temperatureService.save(e);
+        //flatMap(temperature -> ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+        //                .bodyValue(temperature)).onErrorResume(error -> ServerResponse.badRequest().build());
     }
 
     @RequestMapping(value = "/stadistics/{date}", method = RequestMethod.GET)
@@ -48,8 +47,8 @@ public class TemperatureController {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public Flux<Temperature> getAll() {
-        return temperatureService.getAll();
+    public Flux<Temperature> findAll() {
+        return temperatureService.findAll();
     }
 
     @RequestMapping(value = "/fecha/{fecha}", method = RequestMethod.GET)

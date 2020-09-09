@@ -1,11 +1,24 @@
 package com.everis.ms.entity;
 
+import com.everis.ms.util.Constantes;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table("weather")
 public class Temperature implements Serializable {
 
@@ -17,34 +30,25 @@ public class Temperature implements Serializable {
     private Integer id;
 
 
+    @Column("millis")
+    private Long millis;
+
+
+    @Column("temperature")
+    private double temperature;
+
     @Column("fecha")
-    private String fecha;
+    private LocalDateTime localtime;
 
 
-    @Column("temperatura")
-    private double temperatura;
-
-    public Integer getId() {
-        return id;
+    /*
+    public LocalDateTime getDate() {
+        return Instant.ofEpochMilli(millis)
+                .atZone(ZoneId.of(Constantes.REGION))
+                .toLocalDateTime();
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+     */
 
-    public String getFecha() {
-        return fecha;
-    }
 
-    public void setFecha(String fecha) {
-        this.fecha = fecha;
-    }
-
-    public double getTemperatura() {
-        return temperatura;
-    }
-
-    public void setTemperatura(double temperatura) {
-        this.temperatura = temperatura;
-    }
 }

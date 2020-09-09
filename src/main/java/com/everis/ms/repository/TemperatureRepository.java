@@ -9,13 +9,13 @@ import reactor.core.publisher.Mono;
 
 public interface TemperatureRepository extends ReactiveCrudRepository<Temperature, Integer> {
 
-    Mono<Temperature> findById(Integer id);
+    //Mono<Temperature> findById(Integer id);
 
 
-    @Query("select id, fecha, temperatura from weather")
-    Flux<Temperature> getAll();
+    //@Query("select id, fecha, temperatura from weather")
+    //Flux<Temperature> getAll();
 
-    @Query("select id, fecha, temperatura from weather where to_char(fecha,'YYYY-MM-DD') = $1")
+    @Query("select id, millis, temperature from weather where TO_TIMESTAMP(millis) = $1")
     Flux<Temperature> findAllByFecha(String fecha);
 
 

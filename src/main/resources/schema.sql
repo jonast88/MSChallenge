@@ -1,8 +1,9 @@
 --CREATE TABLE weather (id NUMBER PRIMARY KEY, date TIMESTAMP , temperature NUMBER );
 CREATE TABLE weather (
                          id INT NOT NULL AUTO_INCREMENT,
-                         fecha VARCHAR(16) NOT NULL,
-                         temperatura NUMBER NOT NULL,
+                         millis BIGINT NOT NULL,
+                         temperature NUMBER NOT NULL,
+                         fecha timestamp not null,
                          PRIMARY KEY (id)
 );
 --INSERT INTO weather(fecha, temperatura) VALUES ('2019-09-05 18:10',30);

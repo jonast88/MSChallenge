@@ -9,10 +9,10 @@ import reactor.core.publisher.Mono;
 
 public interface ITemperatureService {
 
-    public Mono<Temperature> save(TemperatureDTO e);
+    public Mono save(TemperatureDTO e);
     Mono<StadisticDayDTO> findByDate(String date);
     Flux<StadisticDTO> findStadisticByDate(String date);
 
-    Flux<Temperature> getAll();
+    Flux<Temperature> findAll();
     Flux<Temperature> findAllByFecha(String date);
 }
