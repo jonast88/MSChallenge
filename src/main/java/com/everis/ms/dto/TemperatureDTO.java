@@ -1,25 +1,16 @@
 package com.everis.ms.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TemperatureDTO {
 
     private String fecha;
 
     private double temperatura;
 
-    public String getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(String fecha) {
-        this.fecha = fecha;
-    }
-
-    public double getTemperatura() {
-        return temperatura;
-    }
-
-    public void setTemperatura(double temperatura) {
-        this.temperatura = temperatura;
-    }
 }

@@ -18,9 +18,9 @@ import reactor.core.publisher.Mono;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Optional;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -112,8 +112,79 @@ public class TemperatureService implements ITemperatureService {
 
     @Override
     public Flux<StadisticDTO> findDetailStadisticByDate(String date) {
-        //temperatureRepository.findAllByDate(UtilDate.parseTimeStampSQL(date));
-        return null;
+        //Validar si es fecha valida - Formato: yyyy-MM-dd
+        Date fecha=null;
+        try {
+            fecha=UtilDate.parseDate(date,Constantes.FORMAT_DATE);
+        }catch (Exception e){
+            return Flux.error(new Exception("Error en formato de fecha yyyy-MM-dd"));
+        }
+
+        Flux<Temperature> temperatureFlux=temperatureRepository.findAllByFecha(date.trim());//.findAllByFecha(date.trim());
+        temperatureFlux
+                .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH")
+                        .format(x.getLocaltime())))
+        .map(stringListMap -> {
+            System.out.println(">>>>>>>>"+stringListMap);
+            return null;
+        });
+
+        Mono<Double> averageMono=temperatureFlux
+                .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH").format(x.getLocaltime())))
+                .flatMapIterable(stringListMap -> stringListMap.get("2020092318"))
+                .collect(Collectors.averagingDouble(Temperature::getTemperature));
+        averageMono.subscribe(System.out::println);
+
+        Mono<Map<Object, List<Temperature>>> flux=temperatureFlux
+                .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH").format(x.getLocaltime())));
+
+
+        flux.subscribe(objectListMap -> {System.out.println(objectListMap);});
+
+
+
+        Flux<List<Temperature>> flux2=temperatureFlux
+                .groupBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH").format(x.getLocaltime()))
+                .flatMap(Flux::collectList);
+
+        flux2.subscribe(System.out::println);
+
+        Flux<StadisticDTO> stadisticFlux=flux2.flatMap(temperatures -> {
+            Flux<Temperature> tmpFlux=Flux.fromIterable(temperatures);
+            Mono<Double> averageTmp=tmpFlux.collect(Collectors.averagingDouble(Temperature::getTemperature));
+            Mono<Optional<Temperature>>  maxTmp = tmpFlux.collect(Collectors.maxBy(Comparator.comparingDouble(Temperature::getTemperature)));
+            Mono<Optional<Temperature>>  minTmp = tmpFlux.collect(Collectors.minBy(Comparator.comparingDouble(Temperature::getTemperature)));
+
+
+             return Mono.zip(averageTmp,
+                    maxTmp,
+                    minTmp).flatMap(data->{
+                 StadisticDTO stadisticDTO= new StadisticDTO();
+                stadisticDTO.setTime("");
+                stadisticDTO.setAverage(data.getT1());
+                if(data.getT2().isPresent()){
+                    stadisticDTO.setMax(data.getT2().get().getTemperature());
+                }
+                if(data.getT3().isPresent()){
+                    stadisticDTO.setMin(data.getT3().get().getTemperature());
+                }
+                return Mono.just(stadisticDTO);
+            });
+        });
+
+        stadisticFlux.subscribe(System.out::println);
+
+         //flux2.subscribe(listOfStringsHavingDataWithSameKey -> System.out.println(listOfStringsHavingDataWithSameKey.toString()));
+
+        //.collect(Collectors.groupingBy(x -> x.getLocaltime().truncatedTo(ChronoUnit.HOURS)));
+        //flux.subscribe(objectListMap -> {System.out.println(objectListMap);});
+
+               // .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH").format(x.getLocaltime())))
+       // .subscribe(System.out::println);
+        ;
+
+
+        return stadisticFlux;
     }
 
     @Override

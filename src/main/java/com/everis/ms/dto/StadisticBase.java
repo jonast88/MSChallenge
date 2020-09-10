@@ -1,10 +1,10 @@
 package com.everis.ms.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class StadisticBase {
     private double min;
     private double max;
