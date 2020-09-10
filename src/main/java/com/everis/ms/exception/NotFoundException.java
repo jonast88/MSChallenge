@@ -7,7 +7,7 @@ public class NotFoundException extends Exception {
     }
 
     public NotFoundException(String date) {
-        super(String.format("Date %s Not found", date));
+        super(String.format("Data for Date %s Not found", date));
     }
 
     public NotFoundException(String date, Throwable cause) {

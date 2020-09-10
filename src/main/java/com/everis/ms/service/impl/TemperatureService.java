@@ -121,46 +121,33 @@ public class TemperatureService implements ITemperatureService {
         }
 
         Flux<Temperature> temperatureFlux=temperatureRepository.findAllByFecha(date.trim());//.findAllByFecha(date.trim());
-        temperatureFlux
-                .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH")
-                        .format(x.getLocaltime())))
-        .map(stringListMap -> {
-            System.out.println(">>>>>>>>"+stringListMap);
-            return null;
-        });
-
-        Mono<Double> averageMono=temperatureFlux
-                .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH").format(x.getLocaltime())))
-                .flatMapIterable(stringListMap -> stringListMap.get("2020092318"))
-                .collect(Collectors.averagingDouble(Temperature::getTemperature));
-        averageMono.subscribe(System.out::println);
-
-        Mono<Map<Object, List<Temperature>>> flux=temperatureFlux
-                .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH").format(x.getLocaltime())));
 
 
-        flux.subscribe(objectListMap -> {System.out.println(objectListMap);});
-
-
-
-        Flux<List<Temperature>> flux2=temperatureFlux
+        Flux<List<Temperature>> fluxRange=temperatureFlux
                 .groupBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH").format(x.getLocaltime()))
                 .flatMap(Flux::collectList);
 
-        flux2.subscribe(System.out::println);
+        fluxRange.subscribe(System.out::println);
 
-        Flux<StadisticDTO> stadisticFlux=flux2.flatMap(temperatures -> {
+        Flux<StadisticDTO> stadisticFlux=fluxRange.flatMap(temperatures -> {
+
             Flux<Temperature> tmpFlux=Flux.fromIterable(temperatures);
+
             Mono<Double> averageTmp=tmpFlux.collect(Collectors.averagingDouble(Temperature::getTemperature));
             Mono<Optional<Temperature>>  maxTmp = tmpFlux.collect(Collectors.maxBy(Comparator.comparingDouble(Temperature::getTemperature)));
             Mono<Optional<Temperature>>  minTmp = tmpFlux.collect(Collectors.minBy(Comparator.comparingDouble(Temperature::getTemperature)));
+
 
 
              return Mono.zip(averageTmp,
                     maxTmp,
                     minTmp).flatMap(data->{
                  StadisticDTO stadisticDTO= new StadisticDTO();
-                stadisticDTO.setTime("");
+                 String horaIni=DateTimeFormatter.ofPattern("HH:00")
+                         .format(temperatures.get(0).getLocaltime());
+                 String horaFin=DateTimeFormatter.ofPattern("HH:59")
+                         .format(temperatures.get(0).getLocaltime());
+                stadisticDTO.setTime(String.format("%s a %s",horaIni,horaFin));
                 stadisticDTO.setAverage(data.getT1());
                 if(data.getT2().isPresent()){
                     stadisticDTO.setMax(data.getT2().get().getTemperature());
@@ -172,17 +159,7 @@ public class TemperatureService implements ITemperatureService {
             });
         });
 
-        stadisticFlux.subscribe(System.out::println);
-
-         //flux2.subscribe(listOfStringsHavingDataWithSameKey -> System.out.println(listOfStringsHavingDataWithSameKey.toString()));
-
-        //.collect(Collectors.groupingBy(x -> x.getLocaltime().truncatedTo(ChronoUnit.HOURS)));
-        //flux.subscribe(objectListMap -> {System.out.println(objectListMap);});
-
-               // .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH").format(x.getLocaltime())))
-       // .subscribe(System.out::println);
-        ;
-
+        //stadisticFlux.subscribe(System.out::println);
 
         return stadisticFlux;
     }
@@ -203,6 +180,38 @@ public class TemperatureService implements ITemperatureService {
 
         return temperatureRepository.findAllByFecha(date.trim());
     }
+
+     /*
+        temperatureFlux
+                .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH")
+                        .format(x.getLocaltime())))
+                .map(stringListMap -> {
+                    System.out.println(">>>>>>>>"+stringListMap);
+                    return null;
+                });
+
+        Mono<Double> averageMono=temperatureFlux
+                .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH").format(x.getLocaltime())))
+                .flatMapIterable(stringListMap -> stringListMap.get("2020092318"))
+                .collect(Collectors.averagingDouble(Temperature::getTemperature));
+        averageMono.subscribe(System.out::println);
+
+        Mono<Map<Object, List<Temperature>>> flux=temperatureFlux
+                .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH").format(x.getLocaltime())));
+
+        flux.subscribe(objectListMap -> {System.out.println(objectListMap);});
+
+
+        */
+
+    //flux2.subscribe(listOfStringsHavingDataWithSameKey -> System.out.println(listOfStringsHavingDataWithSameKey.toString()));
+
+    //.collect(Collectors.groupingBy(x -> x.getLocaltime().truncatedTo(ChronoUnit.HOURS)));
+    //flux.subscribe(objectListMap -> {System.out.println(objectListMap);});
+
+    // .collect(Collectors.groupingBy(x -> DateTimeFormatter.ofPattern("yyyyMMddHH").format(x.getLocaltime())))
+    // .subscribe(System.out::println);
+
     /*
     @Transactional
 	public Mono<Customer> save(Customer customer) {

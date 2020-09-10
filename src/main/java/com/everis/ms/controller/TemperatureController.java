@@ -65,7 +65,8 @@ public class TemperatureController {
 
     @RequestMapping(value = "/stadistics/detail/{date}", method = RequestMethod.GET)
     public Flux<StadisticDTO> findDetailStadisticByDate(@PathVariable("date") String date) {
-        return temperatureService.findDetailStadisticByDate(date);
+        return temperatureService.findDetailStadisticByDate(date)
+                .switchIfEmpty(Mono.error(new NotFoundException(date)));
     }
 
 }
