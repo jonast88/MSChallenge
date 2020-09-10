@@ -1,5 +1,5 @@
 package com.everis.ms.config;
-/*
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -7,6 +7,7 @@ import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.builders.ResponseMessageBuilder;
 import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
 import springfox.documentation.service.ResponseMessage;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
@@ -28,7 +29,6 @@ public class Swagger2Config
                 .select()
                 .apis(RequestHandlerSelectors
                               .basePackage("com.everis.ms.controller"))
-                .paths(ant("/MSTemperature/**"))
                 .build()
                 .apiInfo(apiEndPointsInfo())
                 .useDefaultResponseMessages(false)
@@ -42,7 +42,7 @@ public class Swagger2Config
         return new ApiInfoBuilder()
                 .title("DOCUMENTACION DE PROYECTO CHALLENGE")
                 .description("Microservicio de temperaturas. ")
-//                .contact(new Contact("Ramesh Fadatare", "www.javaguides.net", "ramesh24fadatare@gmail.com"))
+                .contact(new Contact("Jonathan Ramos", "www.everis.com", "jsrrodriguez@gmail.com"))
 //                .license("Apache 2.0")
 //                .licenseUrl("http://www.apache.org/licenses/LICENSE-2.0.html")
                 .version("1.0.0")
@@ -69,4 +69,3 @@ public class Swagger2Config
 }
 
 
- */
