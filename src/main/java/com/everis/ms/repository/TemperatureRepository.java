@@ -15,7 +15,7 @@ public interface TemperatureRepository extends ReactiveCrudRepository<Temperatur
     //@Query("select id, fecha, temperatura from weather")
     //Flux<Temperature> getAll();
 
-    @Query("select id, millis, temperature from weather where TO_TIMESTAMP(millis) = $1")
+    @Query("select * from weather where TO_CHAR(fecha,'yyyy-MM-dd') = $1")
     Flux<Temperature> findAllByFecha(String fecha);
 
 

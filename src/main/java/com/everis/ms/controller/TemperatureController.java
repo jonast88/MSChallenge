@@ -4,6 +4,7 @@ import com.everis.ms.dto.StadisticDTO;
 import com.everis.ms.dto.StadisticDayDTO;
 import com.everis.ms.dto.TemperatureDTO;
 import com.everis.ms.entity.Temperature;
+import com.everis.ms.exception.NotFoundException;
 import com.everis.ms.service.impl.TemperatureService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContextException;
@@ -34,6 +35,18 @@ public class TemperatureController {
         //                .bodyValue(temperature)).onErrorResume(error -> ServerResponse.badRequest().build());
     }
 
+
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    public Flux<Temperature> findAll() {
+        return temperatureService.findAll();
+    }
+
+    @RequestMapping(value = "/{date}", method = RequestMethod.GET)
+    public Flux<Temperature> findAllByFecha(@PathVariable("date") String date) {
+        return temperatureService.findAllByDate(date);
+    }
+
+    /*
     @RequestMapping(value = "/stadistics/{date}", method = RequestMethod.GET)
     public ResponseEntity<Mono<StadisticDayDTO>> findByDate(@PathVariable("date") String date) {
         Mono<StadisticDayDTO> e = temperatureService.findByDate(date);
@@ -41,19 +54,18 @@ public class TemperatureController {
         return new ResponseEntity<Mono<StadisticDayDTO>>(e, status);
     }
 
+     */
+
+
+    @RequestMapping(value = "/stadistics/{date}", method = RequestMethod.GET)
+    public Mono<StadisticDayDTO> findStadisticsByDate(@PathVariable("date") String date) {
+        return temperatureService.findStadisticsByDate(date)
+                .switchIfEmpty(Mono.error(new NotFoundException(date)));
+    }
+
     @RequestMapping(value = "/stadistics/detail/{date}", method = RequestMethod.GET)
-    public Flux<StadisticDTO> findStadisticByDate(@PathVariable("date") String date) {
-        return temperatureService.findStadisticByDate(date);
-    }
-
-    @RequestMapping(value = "/", method = RequestMethod.GET)
-    public Flux<Temperature> findAll() {
-        return temperatureService.findAll();
-    }
-
-    @RequestMapping(value = "/fecha/{fecha}", method = RequestMethod.GET)
-    public Flux<Temperature> findAllByFecha(@PathVariable("fecha") String fecha) {
-        return temperatureService.findAllByFecha(fecha);
+    public Flux<StadisticDTO> findDetailStadisticByDate(@PathVariable("date") String date) {
+        return temperatureService.findDetailStadisticByDate(date);
     }
 
 }

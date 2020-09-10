@@ -18,7 +18,10 @@ import reactor.core.publisher.Mono;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TemperatureService implements ITemperatureService {
@@ -65,13 +68,50 @@ public class TemperatureService implements ITemperatureService {
     }
 
     @Override
-    public Mono<StadisticDayDTO> findByDate(String date) {
-       // temperatureRepository.findByDate(UtilDate.parseTimeStampSQL(date));
-        return null;
+    public Mono<StadisticDayDTO> findStadisticsByDate(String date) {
+        //Validar si es fecha valida - Formato: yyyy-MM-dd
+        Date fecha=null;
+        try {
+            fecha=UtilDate.parseDate(date,Constantes.FORMAT_DATE);
+        }catch (Exception e){
+            return Mono.error(new Exception("Error en formato de fecha yyyy-MM-dd"));
+        }
+
+        Flux<Temperature> temperatureFlux=temperatureRepository.findAllByFecha(date.trim());
+        Mono<Double> averageMono = temperatureFlux.collect(Collectors.averagingDouble(Temperature::getTemperature));
+        //Promedio
+        averageMono.subscribe(System.out::println);
+
+        //Max
+        Mono<Optional<Temperature>>  maxMono = temperatureFlux.collect(Collectors.maxBy(Comparator.comparingDouble(Temperature::getTemperature)));
+        //maxMono.subscribe(x -> System.out.println(x.get().getTemperature()));
+        System.out.println("===MIN==");
+        //Min
+        Mono<Optional<Temperature>>  minMono = temperatureFlux.collect(Collectors.minBy(Comparator.comparingDouble(Temperature::getTemperature)));
+       // minMono.subscribe(x -> System.out.println(x.get().getTemperature()));
+
+        Mono<StadisticDayDTO> x = null;
+
+       return Mono.zip(averageMono,
+                maxMono,
+                minMono).flatMap(data->{
+            StadisticDayDTO stadisticDayDTO= new StadisticDayDTO();
+            stadisticDayDTO.setDate(date);
+            stadisticDayDTO.setAverage(data.getT1());
+            if(data.getT2().isPresent()){
+                stadisticDayDTO.setMax(data.getT2().get().getTemperature());
+            }
+           if(data.getT3().isPresent()){
+               stadisticDayDTO.setMin(data.getT3().get().getTemperature());
+           }
+            return Mono.just(stadisticDayDTO);
+        });
+
+
     }
 
     @Override
-    public Flux<StadisticDTO> findStadisticByDate(String date) {
+    public Flux<StadisticDTO> findDetailStadisticByDate(String date) {
         //temperatureRepository.findAllByDate(UtilDate.parseTimeStampSQL(date));
         return null;
     }
@@ -81,16 +121,16 @@ public class TemperatureService implements ITemperatureService {
         return temperatureRepository.findAll();
     }
     @Override
-    public Flux<Temperature> findAllByFecha(String date){
-        //Validar si es fecha valida - Fomrato: yyyy-MM-dd
+    public Flux<Temperature> findAllByDate(String date){
+        //Validar si es fecha valida - Formato: yyyy-MM-dd
         Date fecha=null;
         try {
-            fecha=UtilDate.parseDate(date,UtilDate.dateFormatURI);
+            fecha=UtilDate.parseDate(date,Constantes.FORMAT_DATE);
         }catch (Exception e){
-            return Flux.error(e);
+            return Flux.error(new Exception("Error en formato de fecha yyyy-MM-dd"));
         }
 
-        return temperatureRepository.findAllByFecha(date);
+        return temperatureRepository.findAllByFecha(date.trim());
     }
     /*
     @Transactional
