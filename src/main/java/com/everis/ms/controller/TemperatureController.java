@@ -41,7 +41,7 @@ public class TemperatureController {
     @ApiOperation(value = "Registrar temperatura con fecha y hora. ",
             response = Temperature.class)
 
-    @RequestMapping(value =  "/" , method = RequestMethod.POST)
+    @RequestMapping(value =  {"/","/create"} , method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)
     public Mono create(@RequestBody TemperatureDTO temperatureDTO) {
         //Mono<Temperature> result= temperatureService.save(e);
