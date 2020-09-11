@@ -6,6 +6,7 @@ import com.everis.ms.dto.TemperatureDTO;
 import com.everis.ms.entity.Temperature;
 import com.everis.ms.exception.NotFoundException;
 import com.everis.ms.service.impl.TemperatureService;
+import com.everis.ms.util.Constantes;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -20,6 +21,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.util.LinkedList;
+import java.util.List;
 
 @RestController
 @Api(tags = "Application Api REST - Temperature")
@@ -74,7 +77,8 @@ public class TemperatureController {
 
      */
 
-    @ApiOperation(value = "Obtiene estadisticas de temperaturas en una fecha específica",
+
+    @ApiOperation(value = "Obtiene estadisticas de temperaturas en una fecha específica - Celcius",
             response = StadisticDayDTO.class)
     @RequestMapping(value = "/stadistics/{date}", method = RequestMethod.GET)
     public Mono<StadisticDayDTO> findStadisticsByDate(
@@ -86,12 +90,64 @@ public class TemperatureController {
 
     @ApiOperation(value = "Obtiene estadisticas de temperaturas en una fecha específica detallado por cada hora",
             response = StadisticDTO.class)
-    @RequestMapping(value = "/stadistics/detail/{date}", method = RequestMethod.GET)
+    @RequestMapping(value = "/stadistics-detail/{date}", method = RequestMethod.GET)
     public Flux<StadisticDTO> findDetailStadisticByDate(
             @ApiParam(name = "date", value = "Fecha a consultar", example = "yyyy-MM-dd")
             @PathVariable("date") String date) {
         return temperatureService.findDetailStadisticByDate(date)
                 .switchIfEmpty(Mono.error(new NotFoundException(date)));
     }
+
+
+
+    @ApiOperation(value = "Obtiene estadisticas de temperaturas en una fecha específica por default se obtiene en Celcius",
+            response = StadisticDayDTO.class)
+    @RequestMapping(value = "/stadistics/{date}/{type}", method = RequestMethod.GET)
+    public Mono<StadisticDayDTO> findStadisticsByDate(
+            @ApiParam(name = "date", required = true, value = "Fecha a consultar", example = "yyyy-MM-dd")
+            @PathVariable("date") String date,
+            @ApiParam(name = "type", required = false, value = "Farenheit (F) de lo contrario la temperatura será devuelta en Celcius", example = "F")
+            @PathVariable("type") String type) {
+
+
+        return temperatureService.findStadisticsByDate(date).map(stadisticDayDTO -> {
+            if(type !=null && !type.isEmpty()){
+
+                if(type.equalsIgnoreCase("F")){
+                    stadisticDayDTO.setAverage(stadisticDayDTO.getAverage()* Constantes.FARENHEIT);
+                    stadisticDayDTO.setMax(stadisticDayDTO.getMax()* Constantes.FARENHEIT);
+                    stadisticDayDTO.setMin(stadisticDayDTO.getMin()* Constantes.FARENHEIT);
+                }
+
+            }
+            return stadisticDayDTO;
+        }).switchIfEmpty(Mono.error(new NotFoundException(date)));
+
+    }
+
+    @ApiOperation(value = "Obtiene estadisticas de temperaturas en una fecha específica detallado por cada hora, Celciud por Default",
+            response = StadisticDTO.class)
+    @RequestMapping(value = "/stadistics-detail/{date}/{type}", method = RequestMethod.GET)
+    public Flux<StadisticDTO> findDetailStadisticByDate(
+            @ApiParam(name = "date", required = true, value = "Fecha a consultar", example = "yyyy-MM-dd")
+            @PathVariable("date") String date,
+            @ApiParam(name = "type", required = false, value = "Farenheit (F) de lo contrario la temperatura será devuelta en Celcius", example = "F")
+            @PathVariable("type") String type){
+        return temperatureService.findDetailStadisticByDate(date)
+                .flatMap(stadisticDTO -> {
+                    if(type !=null && !type.isEmpty()){
+
+                        if(type.equalsIgnoreCase("F")){
+                            stadisticDTO.setAverage(stadisticDTO.getAverage()* Constantes.FARENHEIT);
+                            stadisticDTO.setMax(stadisticDTO.getMax()* Constantes.FARENHEIT);
+                            stadisticDTO.setMin(stadisticDTO.getMin()* Constantes.FARENHEIT);
+                        }
+
+                    }
+                    return Flux.just(stadisticDTO);
+                })
+                .switchIfEmpty(Mono.error(new NotFoundException(date)));
+    }
+
 
 }
